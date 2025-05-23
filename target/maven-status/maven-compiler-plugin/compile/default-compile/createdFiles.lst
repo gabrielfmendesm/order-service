@@ -1,0 +1,12 @@
+store/order/OrderResource.class
+store/order/OrderItem.class
+store/order/OrderItemModel.class
+store/order/Order$OrderBuilder.class
+store/order/OrderService.class
+store/order/StoreExceptionHandler.class
+store/order/OrderApplication.class
+store/order/OrderRepository.class
+store/order/OrderItem$OrderItemBuilder.class
+store/order/OrderParser.class
+store/order/Order.class
+store/order/OrderModel.class
