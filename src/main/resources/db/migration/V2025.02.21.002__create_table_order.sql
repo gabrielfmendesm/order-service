@@ -1,4 +1,4 @@
-CREATE TABLE order (
+CREATE TABLE "order" (
     id_order      VARCHAR(36)    NOT NULL,
     id_account    VARCHAR(36)    NOT NULL,
     dt_date       TIMESTAMP      NOT NULL,
