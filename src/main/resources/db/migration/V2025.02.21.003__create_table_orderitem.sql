@@ -1,4 +1,4 @@
-CREATE TABLE order_item (
+CREATE TABLE orders_item (
     id_item       VARCHAR(36)    NOT NULL,
     id_order      VARCHAR(36)    NOT NULL,
     id_product    VARCHAR(36)    NOT NULL,
