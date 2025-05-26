@@ -2,44 +2,44 @@ package store.order;
 
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+import store.account.AccountOut;
 
 @RestController
-@RequestMapping("/order")
 public class OrderResource implements OrderController {
 
     @Autowired
     private OrderService orderService;
 
     @Override
-    @PostMapping
-    public ResponseEntity<OrderOut> create(@RequestBody OrderIn orderIn) {
-        Order saved = orderService.create(OrderParser.to(orderIn));
-        return ResponseEntity.ok(OrderParser.to(saved));
+    public ResponseEntity<OrderOut> createOrder(String idAccount, OrderIn orderIn) {
+        Order created = orderService.create(
+            OrderParser.to(orderIn)
+                .account(AccountOut.builder().id(idAccount).build())
+        );
+        return ResponseEntity.ok().body(OrderParser.to(created));
     }
 
     @Override
-    @GetMapping
-    public ResponseEntity<List<OrderOut>> findAll() {
-        List<OrderOut> list = orderService.findAll().stream()
-            .map(OrderParser::to)
-            .toList();
-        return ResponseEntity.ok(list);
+    public ResponseEntity<List<OrderOut>> getAllOrders(String idAccount) {
+        return ResponseEntity
+            .ok()
+            .body(orderService.findAll(idAccount).stream().map(OrderParser::to).toList());
     }
 
     @Override
-    @GetMapping("/{id}")
-    public ResponseEntity<OrderOut> findById(@PathVariable String id) {
-        Order order = orderService.findById(id);
-        return ResponseEntity.ok(OrderParser.to(order));
+    public ResponseEntity<OrderOut> getOrderById(String idAccount, String id) {
+        Order order = orderService.findById(idAccount, id);
+        return ResponseEntity.ok().body(OrderParser.to(order));
     }
 
     @Override
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable String id) {
-        orderService.delete(id);
-        return ResponseEntity.noContent().build();
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteOrder(String idAccount, String id) {
+        orderService.deleteOrder(id);
     }
 
 }

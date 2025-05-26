@@ -24,16 +24,16 @@ public class OrderItemModel {
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
-    @Column(name = "id_product")
-    private String productId;
-
     @Column(name = "id_order")
     private String orderId;
 
-    @Column(name = "quantity")
+    @Column(name = "id_product")
+    private String productId;
+
+    @Column(name = "nu_quantity ")
     private Integer quantity;
 
-    @Column(name = "total")
+    @Column(name = "nu_total")
     private Double total;
 
     public OrderItemModel(OrderItem i) {

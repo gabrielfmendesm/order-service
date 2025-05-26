@@ -15,8 +15,8 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
-        default_schema: order
+        default_schema: orders
 
   flyway:
-    schemas: order
+    schemas: orders
     baseline-on-migrate: true

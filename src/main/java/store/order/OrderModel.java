@@ -27,7 +27,7 @@ public class OrderModel {
     @Column(name = "date_order")
     private Date date;
 
-    @Column(name = "total")
+    @Column(name = "nu_total")
     private Double total;
 
     public OrderModel(Order order) {

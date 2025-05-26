@@ -3,10 +3,12 @@ package store.order;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.StreamSupport;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+
 import store.product.ProductController;
 import store.product.ProductOut;
 
@@ -17,37 +19,71 @@ public class OrderService {
     private ProductController productController;
 
     @Autowired
+    private OrderItemRepository orderItemRepository;
+
+    @Autowired
     private OrderRepository orderRepository;
 
-    public Order create(Order domain) {
-        domain.date(new Date());
-        domain.total(0.0);
+    public Order create(Order order) {
+        order.date(new Date());
+        order.total(0.0);
 
-        for (OrderItem item : domain.items()) {
-            ProductOut prod = productController.findById(item.product().id()).getBody();
-            item.product(prod);
-            item.total(item.quantity() * prod.price());
-            domain.total(domain.total() + item.total());
-        }
+        order.items().forEach(item -> {
+            ProductOut product = productController.findById(item.product().id()).getBody();
+            item.product(product);
+            item.total(item.quantity() * item.product().price());
+            order.total(order.total() + item.total());
+        });
 
-        OrderModel model = new OrderModel(domain);
-        OrderModel saved = orderRepository.save(model);
-        return saved.to();
+        Order saved = orderRepository.save(new OrderModel(order)).to();
+
+        order.items().forEach(item -> {
+            item.order(saved);
+            OrderItem savedItem = orderItemRepository.save(new OrderItemModel(item)).to();
+            saved.items().add(savedItem);
+        });
+
+        return saved;
     }
 
-    public List<Order> findAll() {
-        return StreamSupport.stream(orderRepository.findAll().spliterator(), false)
+    public List<Order> findAll(String idAccount) {
+        List<Order> orders = StreamSupport
+            .stream(orderRepository.findByAccountId(idAccount).spliterator(), false)
             .map(OrderModel::to)
             .toList();
+
+        orders.forEach(order ->
+            order.items(
+                StreamSupport
+                    .stream(orderItemRepository.findByOrderId(order.id()).spliterator(), false)
+                    .map(OrderItemModel::to)
+                    .toList()
+            )
+        );
+
+        return orders;
     }
 
-    public Order findById(String id) {
+    public Order findById(String idAccount, String id) {
         OrderModel model = orderRepository.findById(id)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
-        return model.to();
+        Order order = model.to();
+
+        if (!order.account().id().equals(idAccount)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found");
+        }
+
+        order.items(
+            StreamSupport
+                .stream(orderItemRepository.findByOrderId(id).spliterator(), false)
+                .map(OrderItemModel::to)
+                .toList()
+        );
+
+        return order;
     }
 
-    public void delete(String id) {
+    public void deleteOrder(String id) {
         OrderModel model = orderRepository.findById(id)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
         orderRepository.delete(model);
