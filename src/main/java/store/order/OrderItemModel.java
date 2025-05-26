@@ -1,12 +1,19 @@
 package store.order;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import store.order.OrderItem;
+import store.product.ProductOut;
 
 @Entity
-@Table(name = "order_item")
+@Table(name = "orders_item")
 @Setter
 @Accessors(fluent = true)
 @NoArgsConstructor
@@ -17,29 +24,39 @@ public class OrderItemModel {
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
-    @ManyToOne
-    @JoinColumn(name = "id_order", nullable = false)
-    private OrderModel orderModel;
-
-    @Column(name = "id_product", nullable = false)
+    @Column(name = "id_product")
     private String productId;
 
-    @Column(name = "nu_quantity", nullable = false)
+    @Column(name = "id_order")
+    private String orderId;
+
+    @Column(name = "quantity")
     private Integer quantity;
 
-    @Column(name = "nu_total", nullable = false)
+    @Column(name = "total")
     private Double total;
 
-    public OrderItemModel(OrderItem it) {
-        this.productId = it.productId();
-        this.quantity  = it.quantity();
-        this.total     = it.total();
+    public OrderItemModel(OrderItem i) {
+        this.id = i.id();
+        this.productId = i.product().id();
+        this.orderId = i.order().id();
+        this.quantity = i.quantity();
+        this.total = i.total();
     }
 
     public OrderItem to() {
         return OrderItem.builder()
             .id(this.id)
-            .productId(this.productId)
+            .product(
+                ProductOut.builder()
+                    .id(this.productId)
+                    .build()
+            )
+            .order(
+                Order.builder()
+                    .id(this.orderId)
+                    .build()
+            )
             .quantity(this.quantity)
             .total(this.total)
             .build();

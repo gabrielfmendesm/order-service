@@ -3,36 +3,42 @@ package store.order;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
+@RequestMapping("/order")
 public class OrderResource implements OrderController {
 
-    @Autowired private OrderService orderService;
+    @Autowired
+    private OrderService orderService;
 
     @Override
-    public ResponseEntity<OrderOut> create(String idAccount, OrderIn orderIn) {
-        Order o = orderService.create(orderIn, idAccount);
-        return ResponseEntity.ok(OrderParser.toOut(o));
+    @PostMapping
+    public ResponseEntity<OrderOut> create(@RequestBody OrderIn orderIn) {
+        Order saved = orderService.create(OrderParser.to(orderIn));
+        return ResponseEntity.ok(OrderParser.to(saved));
     }
 
     @Override
-    public ResponseEntity<List<OrderOut>> findAll(String idAccount) {
-        List<OrderOut> list = orderService.findAll(idAccount).stream()
-            .map(OrderParser::toOut)   // sem parênteses!
+    @GetMapping
+    public ResponseEntity<List<OrderOut>> findAll() {
+        List<OrderOut> list = orderService.findAll().stream()
+            .map(OrderParser::to)
             .toList();
         return ResponseEntity.ok(list);
     }
 
     @Override
-    public ResponseEntity<OrderOut> findById(String idAccount, String id) {
-        Order o = orderService.findById(id, idAccount);
-        return ResponseEntity.ok(OrderParser.toOut(o));
+    @GetMapping("/{id}")
+    public ResponseEntity<OrderOut> findById(@PathVariable String id) {
+        Order order = orderService.findById(id);
+        return ResponseEntity.ok(OrderParser.to(order));
     }
 
     @Override
-    public ResponseEntity<Void> delete(String idAccount, String id) {
-        orderService.delete(id, idAccount);
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable String id) {
+        orderService.delete(id);
         return ResponseEntity.noContent().build();
     }
 

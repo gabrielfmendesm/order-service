@@ -1,17 +1,18 @@
 package store.order;
 
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import jakarta.persistence.*;
-import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.experimental.Accessors;
+import store.account.AccountOut;
 
 @Entity
-@Table(name = "order")
-@NoArgsConstructor
-@Data 
+@Table(name = "orders")
+@Setter
 @Accessors(fluent = true)
+@NoArgsConstructor
 public class OrderModel {
 
     @Id
@@ -19,40 +20,32 @@ public class OrderModel {
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
-    @Column(name = "id_account", nullable = false)
+    @Column(name = "id_account")
     private String accountId;
 
-    @Column(name = "dt_date", nullable = false)
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "date_order")
     private Date date;
 
-    @Column(name = "nu_total", nullable = false)
+    @Column(name = "total")
     private Double total;
 
-    @OneToMany(
-        mappedBy = "orderModel",
-        cascade = CascadeType.ALL,
-        orphanRemoval = true
-    )
-    private List<OrderItemModel> items;
-
-    public OrderModel(Order o) {
-        this.accountId = o.accountId();
-        this.date      = o.date();
-        this.total     = o.total();
-        this.items     = o.items().stream().map(it -> {
-            var m = new OrderItemModel(it);
-            m.orderModel(this);
-            return m;
-        }).toList();
+    public OrderModel(Order order) {
+        this.id = order.id();
+        this.accountId = order.account().id();
+        this.date = order.date();
+        this.total = order.total();
     }
 
     public Order to() {
         return Order.builder()
             .id(this.id)
-            .accountId(this.accountId)
+            .account(
+                AccountOut.builder().id(this.accountId).build()
+            )
             .date(this.date)
             .total(this.total)
-            .items(this.items.stream().map(OrderItemModel::to).toList())
+            .items(new ArrayList<>())
             .build();
     }
 
