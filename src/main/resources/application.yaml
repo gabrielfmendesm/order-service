@@ -20,3 +20,6 @@ spring:
   flyway:
     schemas: orders
     baseline-on-migrate: true
+
+  jackson:
+    default-property-inclusion: non_null
